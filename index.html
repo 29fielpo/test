@@ -1,326 +1,239 @@
 <!DOCTYPE html>
 <html>
-    <head>
-<script src="https://aframe.io/releases/1.0.0/aframe.min.js"></script>
-<script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v4.0.1/dist/aframe-physics-system.min.js"></script>
-    </head>
-    <body>
-        <a-scene physics="debug:true; gravity: -25">
-            
-            <a-plane static-body
-                width="300"
-                height="300"
-                position="0 0 -63"
-                rotation="-90 0 0"
-                color="orange">
-            </a-plane>
-            
-            <a-box static-body
-                width="300"
-                height="300"
-                depth="3"
-                position="8 12 -74"
-                rotation="0 0 -90"
-                color="green">
-            </a-box>
+<head>
+    <title>VR Whack-a-Mole Game</title>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- UI for score display -->
+    <div id="ui">
+        <div>Score: <span id="score">0</span></div>
+        <div>Time: <span id="timer">60</span></div>
+    </div>
 
-            <a-sphere dynamic-body
-                radius="2"
-                color="#ff6600"
-                position="-38 40 -70">
-            </a-sphere>
+    <a-scene background="color: #784A7B" cursor="rayOrigin: mouse">
+        <!-- Assets -->
+        <a-assets>
+            <a-mixin id="mole-animation" 
+                     animation__up="property: position; to: 0 1 0; dur: 500; easing: easeOutQuad"
+                     animation__down="property: position; to: 0 -0.5 0; dur: 500; easing: easeInQuad; startEvents: hide">
+            </a-mixin>
+        </a-assets>
 
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="-39 38 -70"
-                rotation="0 0 -45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="60"
-                height="1"
-                depth="3"
-                position="-27 50 -70"
-                rotation="0 0 90"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="70"
-                height="1"
-                depth="3"
-                position="-47 30 -70"
-                rotation="0 0 90"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="10"
-                height="1"
-                depth="3"
-                position="-32 30 -70"
-                rotation="0 0 45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="10"
-                height="1"
-                depth="3"
-                position="-42 23 -70"
-                rotation="0 0 -45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="10"
-                height="1"
-                depth="3"
-                position="-32 16 -70"
-                rotation="0 0 45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="10"
-                height="1"
-                depth="3"
-                position="-42 10 -70"
-                rotation="0 0 -45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="50"
-                height="1"
-                depth="3"
-                position="-32 4 -70"
-                rotation="0 0 45"
-                color="green">
-            </a-box>
-            
-            <a-cylinder static-body
-                color="crimson" 
-                height="8" 
-                radius="3"
-                position="-40 1 -70"
-                rotation="0 0 -45"
-                animation="
-                property: position;
-                from: -40 1 -70;
-                to: -21 20 -70;
-                delay: 5000;
-                dur: 1000;
-                ">
-            </a-cylinder>
-            <a-box static-body
-                width="5"
-                height="5"
-                depth="3"
-                position="-40 1 -70"
-                rotation="0 0 -45"
-                color="green"
-                animation="
-                property: position;
-                from: -40 1 -70;
-                to: -21 20 -70;
-                delay: 5000;
-                dur: 1000;">
-            </a-box>
-            
-            <a-box static-body
-                width="50"
-                height="1"
-                depth="3"
-                position="-32 4 -70"
-                rotation="0 0 45"
-                color="green">
-            </a-box>
-            
-            <a-cylinder static-body
-                color="grey" 
-                height="2" 
-                radius="7"
-                position="7 48 -70"
-                rotation="0 0 -90">
-            </a-cylinder>
-            <a-cylinder static-body
-                color="crimson" 
-                height="2" 
-                radius="5"
-                position="5 48 -70"
-                rotation="0 0 -90"
-                animation="
-                property: position;
-                from: 5 48 -70;
-                to: 6.5 48 -70;
-                delay: 7000
-                dur: 1000
-                ">
-            </a-cylinder>
-            
-            <a-box static-body
-                width="300"
-                height="300"
-                depth="3"
-                position="8 12 -64"
-                rotation="0 0 -90"
-                color="green"
-                opacity="0">
-            </a-box>
-            
-            <a-sphere dynamic-body
-                radius="2"
-                color="#ff6600"
-                position="-8 26 -70">
-            </a-sphere>
+        <!-- Camera with cursor for gaze interaction -->
+        <a-camera position="0 2 5">
+            <a-cursor 
+                geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                material="color: white; shader: flat"
+                animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+                animation__fuse="property: scale; startEvents: fusing; from: 1 1 1; to: 1.2 1.2 1.2; dur: 1500"
+                raycaster="objects: .mole">
+            </a-cursor>
+        </a-camera>
 
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="-7 22 -70"
-                rotation="0 0 0"
-                color="green"
-                animation="
-                property: position;
-                from: -7 22 -70;
-                to: -7800 22 -70;
-                delay: 8500
-                dur: 100
-                ">
-            </a-box>
-            
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="-7 10 -70"
-                rotation="0 0 -45"
-                color="green">
-            </a-box>
-            
-            <a-cone static-body
-                color="tomato" 
-                radius-bottom="2" 
-                radius-top="0.5"
-                height="7"
-                position="-14 1 -70"
-                animation="
-                property: position;
-                from: -14 1 -70;
-                to: 2 1 -70;
-                delay: 11000;
-                loop: false;
-                dur:200 ">
-            </a-cone>
+        <!-- Ground -->
+        <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" 
+                 color="#E5864B" shadow="receive: true"></a-plane>
 
-            <a-box dynamic-body
-                width="6"
-                height="1"
-                depth="3"
-                position="2.5 5 -70"
-                rotation="0 0 -90"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="20"
-                height="1"
-                depth="3"
-                position="8 12 -70"
-                rotation="0 0 -90"
-                color="green"
-                animation="
-                property: rotation;
-                from: 0 0 -90;
-                to: 0 0 360;
-                delay: 11200;
-                loop: true;
-                dur: 100;
-                ">
-            </a-box>
-            
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="15 13 -70"
-                rotation="0 0 0"
-                color="green">
-            </a-box>
-            
-            <a-dodecahedron dynamic-body
-                radius="2"
-                color="#ff6600"
-                position="15 16 -70">
-            </a-dodecahedron>
 
-            <a-box static-body
-                width="3"
-                height="50"
-                depth="3"
-                position="9 57 -70"
-                rotation="0 0 0"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="1"
-                height="50"
-                depth="3"
-                position="21 32 -70"
-                rotation="0 0 90"
-                color="green"
-                animation="
-                property: position;
-                from: 21 32 -70;
-                to: 0 32 -70;
-                delay: 7500
-                dur: 1000
-                ">
-            </a-box>
-            
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="9 30 -70"
-                rotation="0 0 45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="30 16 -70"
-                rotation="0 0 45"
-                color="green">
-            </a-box>
-            
-            <a-box static-body
-                width="3"
-                height="1"
-                depth="3"
-                position="30 30 -70"
-                rotation="0 0 -45"
-                color="green">
-            </a-box>
-            
-            <a-torus
-                color="orange" 
-                arc="360" 
-                radius="6" 
-                radius-tubular="0.3"
-                position="23 12 -70"
-                rotation="90 0 0">
-            </a-torus>
+        <!-- Ground -->
+        <a-plane position="0 5 -5" rotation="0 0 0" width="10" height="10" 
+                 src="instructions.png" ></a-plane>
+                 
+			<!-- Instruction Sheet -->
+			<img src="instructions.png" alt="Helpful Image">
 
+        <!-- Holes in the ground (visual indicators) -->
+        <a-circle position="-2 0.01 -2" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="0 0.01 -2" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="2 0.01 -2" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="-2 0.01 0" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="0 0.01 0" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="2 0.01 0" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="-2 0.01 2" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="0 0.01 2" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+        <a-circle position="2 0.01 2" rotation="-90 0 0" radius="0.6" color="#040404"></a-circle>
+
+        <!-- Mole positions (initially hidden) -->
+        <a-entity id="mole-container"></a-entity>
+
+        <!-- Lighting -->
+        <a-light type="ambient" color="#404040"></a-light>
+        <a-light type="directional" position="5 10 5" color="#ffffff" 
+                 shadow="cast: true; mapSize: 2048 2048"></a-light>
+
+        <!-- Sky -->
+        <a-sky color="#784A7B"></a-sky>
+        
+    </a-scene>
+    
+    <script>
+        // Game variables
+        let score = 0;
+        let timeLeft = 60;
+        let gameActive = true;
+        let molePositions = [
+            {x: -2, z: -2}, {x: 0, z: -2}, {x: 2, z: -2},
+            {x: -2, z: 0}, {x: 0, z: 0}, {x: 2, z: 0},
+            {x: -2, z: 2}, {x: 0, z: 2}, {x: 2, z: 2}
+        ];
+        let activeMoles = [];
+
+        // Wait for A-Frame to load
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            startGame();
+        });
+		
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            timeLeft = 60;
+            updateUI();
             
-        </a-scene>
-    </body>
+            // Start the game timer
+            const gameTimer = setInterval(() => {
+                timeLeft--;
+                updateUI();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameTimer);
+                    endGame();
+                }
+            }, 1000);
+            
+            // Start spawning moles
+            spawnMoleLoop();
+        }
+
+        function spawnMoleLoop() {
+            if (!gameActive) return;
+            
+            // Spawn a mole every 1-2 seconds
+            setTimeout(() => {
+                if (gameActive) {
+                    spawnMole();
+                    spawnMoleLoop();
+                }
+            }, Math.random() * 1000 + 100);
+        }
+
+        function spawnMole() {
+            // Don't spawn if we have too many active moles
+            if (activeMoles.length >= 7) return;
+            
+            // Choose a random position that's not occupied
+            const availablePositions = molePositions.filter(pos => 
+                !activeMoles.some(mole => mole.position.x === pos.x && mole.position.z === pos.z)
+            );
+            
+            if (availablePositions.length === 0) return;
+            
+            const position = availablePositions[Math.floor(Math.random() * availablePositions.length)];
+            
+            // Randomly choose between box and sphere
+            const isBox = Math.random() > 0.5;
+            const mole = document.createElement('a-entity');
+            
+            if (isBox) {
+                mole.setAttribute('geometry', 'primitive: cone; radius-bottom: 0.4; radius-top: 0.01');
+                mole.setAttribute('material', 'color: #FEAE03');
+                
+            } else {
+                mole.setAttribute('geometry', 'primitive: sphere; radius: 0.4');
+                mole.setAttribute('material', 'color: #FEAE03');
+            }
+            
+            mole.setAttribute('position', `${position.x} -0.5 ${position.z}`);
+            mole.setAttribute('class', 'mole');
+            mole.setAttribute('shadow', 'cast: true');
+            
+            // Add click/gaze interaction
+            mole.addEventListener('click', function() {
+                hitMole(mole);
+            });
+            
+            // Add to scene and active moles list
+            document.querySelector('#mole-container').appendChild(mole);
+            activeMoles.push({element: mole, position: position});
+            
+            // Animate mole popping up
+            mole.setAttribute('animation', 'property: position; to: ' + position.x + ' 1 ' + position.z + '; dur: 500; easing: easeOutQuad');
+            
+            // Hide mole after 2-3 seconds if not hit
+            setTimeout(() => {
+                if (mole.parentNode) {
+                    hideMole(mole);
+                }
+            }, Math.random() * 1000 + 2000);
+        }
+
+        function hitMole(mole) {
+            if (!gameActive) return;
+            
+            score += 10;
+            updateUI();
+            
+            // Visual feedback - make mole flash and disappear
+            mole.setAttribute('material', 'opacity: 0');
+            setTimeout(() => {
+                hideMole(mole);
+            }, 200);
+        }
+
+        function hideMole(mole) {
+            // Remove from active moles list
+            activeMoles = activeMoles.filter(m => m.element !== mole);
+            
+            // Animate mole going down
+            const currentPos = mole.getAttribute('position');
+            mole.setAttribute('animation', 
+                'property: position; to: ' + currentPos.x + ' -0.5 ' + currentPos.z + '; dur: 500; easing: easeInQuad');
+            
+            // Remove from scene after animation
+            setTimeout(() => {
+                if (mole.parentNode) {
+                    mole.parentNode.removeChild(mole);
+                }
+            }, 500);
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+        }
+
+        function endGame() {
+            gameActive = false;
+            
+            // Clear all active moles
+            activeMoles.forEach(mole => {
+                if (mole.element.parentNode) {
+                    mole.element.parentNode.removeChild(mole.element);
+                }
+            });
+            activeMoles = [];
+            
+            alert(`Game Over! Final Score: ${score}`);
+            
+            // Restart game after 2 seconds
+            setTimeout(() => {
+                startGame();
+            }, 2000);
+        }
+    </script>
+</body>
 </html>
